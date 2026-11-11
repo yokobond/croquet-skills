@@ -5,6 +5,7 @@ Croquet でマルチユーザーアプリを作るためのエージェントス
 | スキル | 内容 |
 | --- | --- |
 | [`croquet-multiplayer`](skills/croquet-multiplayer/SKILL.md) | シングルプレイヤーのブラウザゲームやアプリを Croquet の複製計算でマルチプレイヤーにします（Microverse 方式）。物理は Rapier をモデル内で動かし、`world.takeSnapshot()` でスナップショットします |
+| [`croquet-reflector-selfhost`](skills/croquet-reflector-selfhost/SKILL.md) | Croquet の reflector（`files` ブランチ）を、nginx と他のアプリが動いている既存の Linux サーバーで Docker を使わずに運用します。systemd による隔離、容量固定のデータ領域、nginx の設定、上流の版固定とパッチ、定期的な掃除、ヘッドレスクライアントでの検証と再起動テストを扱います |
 
 ## インストール
 
