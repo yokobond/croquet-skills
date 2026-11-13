@@ -65,7 +65,7 @@ Checklist:
 - [ ] `/croquet/reflector/metrics` and `/croquet/reflector/sessions` return 404, and `*.json` under `/files/` returns 403.
 - [ ] An `.html` PUT to `/files/` comes back as `application/octet-stream` with `CSP: sandbox`.
 - [ ] A 21 MB PUT returns 413, and a burst of PUTs is rate limited.
-- [ ] Input that should be rejected (whatever your patches reject) is rejected, and `systemctl show -p NRestarts croquet-reflector` stays at 0. **Confirm that the patched build is the one running before you send bad input**, or you take the production reflector down.
+- [ ] Malformed JOINs are rejected: `REFLECTOR=wss://<host>/croquet/reflector/v1/ node bad-join.js` prints `4100` for every case, and `systemctl show -p NRestarts croquet-reflector` stays at 0. **Confirm that the running build has the fix (`files` at `2070310` or later, or your patch) before you send bad input**, or you take the production reflector down. `reject-join` appears in the log for each rejected JOIN (except `null-args`, which the version check closes without logging).
 - [ ] Full disk: fill the image with a file (`fallocate -l <free> /var/lib/croquet/files/zz-fill`). PUT then returns 500, while `/` and the other apps keep working. The reflector must survive. Delete the file afterwards.
 - [ ] The other apps on the host answer exactly as before (record their HTTP codes before you change nginx).
 - [ ] After about an hour of real use, check the memory (`MemoryCurrent`) and the journal size (`journalctl --namespace=croquet --disk-usage`), then adjust the limits.
@@ -93,5 +93,7 @@ After:
 
 1. Read `https://github.com/croquet/croquet/compare/<pinned>...files`.
 2. Open a PR that changes `UPSTREAM_COMMIT`, and record what you reviewed in it.
-3. If a patch no longer applies, `install.sh` stops before the restart. Rebase the patch, and drop it once upstream has an equivalent fix.
-4. Applying the update restarts the reflector. Clients reconnect and resume from `latest.json`.
+3. If a patch no longer applies, `install.sh` stops before the restart. Rebase the patch, and drop it once upstream has an equivalent fix. To confirm that upstream merged the same change, compare the blob hash of the patched file (`index <old>..<new>` in the patch) with the file at the new commit.
+4. Before applying, check `ss -tn state established "( sport = :9090 )"`. Applying the update restarts the reflector. Clients reconnect and resume from `latest.json`.
+5. Pull on the server with `git merge --ff-only`. Apps deployed into `www/` outside Git (uncommitted files) survive as long as the merged commits do not touch them.
+6. Afterwards run `install.sh --check`, the headless clients and `bad-join.js` again.
