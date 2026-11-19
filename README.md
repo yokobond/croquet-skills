@@ -6,6 +6,7 @@ Croquet でマルチユーザーアプリを作るためのエージェントス
 | --- | --- |
 | [`croquet-multiplayer`](skills/croquet-multiplayer/SKILL.md) | シングルプレイヤーのブラウザゲームやアプリを Croquet の複製計算でマルチプレイヤーにします（Microverse 方式）。物理は Rapier をモデル内で動かし、`world.takeSnapshot()` でスナップショットします |
 | [`croquet-reflector-selfhost`](skills/croquet-reflector-selfhost/SKILL.md) | Croquet の reflector（`files` ブランチ）を、nginx と他のアプリが動いている既存の Linux サーバーで Docker を使わずに運用します。systemd による隔離、容量固定のデータ領域、nginx の設定、上流の版固定とパッチ、定期的な掃除、ヘッドレスクライアントでの検証と再起動テストを扱います |
+| [`croquet-shared-data`](skills/croquet-shared-data/SKILL.md) | プレイヤーが作った物や大きなデータ（メッシュ、STL、画像、自作の部品やステージ）を Croquet で共有します。メッセージの 16KB 上限、データ本体はセッションのファイルサーバー（`session.data.store` / `fetch`）に置き、モデルには中身から作った ID と参照だけを持たせる方法、モデルでの決定的な検証、届くまでの代わりの表示、LAN 上のタブレットでの確認を扱います |
 
 ## インストール
 
