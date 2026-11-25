@@ -34,7 +34,7 @@ Code for each piece: `references/file-server-blobs.md`.
 
 ## Traps this pattern has to step around
 
-- **The view is built during `Session.join`, before `join()` resolves.** If the app keeps the session in a module variable set from `await Session.join(...)`, it is still `null` inside the view constructor, so `session.data.store` cannot be reached there. Sending the design from the constructor is fine; uploading the bytes is not. Start uploads from a hook that runs after join (the app's "changed" hook, for example) and make them idempotent.
+- **The session variable is not set yet inside the view constructor.** Croquet builds the root view inside `Session.join`, once the model is ready (restored from a snapshot or freshly initialized), and passes that model to the constructor. It builds the view again on every reconnect. The `join()` promise resolves only after that, so a module variable set from `session = await Session.join(...)` is still unset while the constructor runs, and `session.data.store` cannot be reached there. In the constructor, only publish (sending the design is fine). Upload the bytes from a hook that runs after join has finished (the app's "changed" hook, for example) and make the upload idempotent.
 - **Uploads belong to a session.** A file stored in one session cannot be fetched in another. Key "already uploaded" by `` `${model.sessionId}|${id}` `` and forget shared things when leaving. `View` has no `sessionId` in the TypeScript types: use `view.model.sessionId`.
 - **Upload once.** Skip ids the model already has a ref for, and ids being uploaded right now. On failure, drop the "uploading" mark so a later call retries.
 - **A changed model is a new session.** Croquet ties sessions to the model code, so after a change to model code an old invite link starts a fresh session. Old snapshots never meet new fields, so you do not need migrations for them. Do tell users that links from before the update start over.
@@ -48,7 +48,7 @@ Anything a player made reaches the model as untrusted input, and every replica m
 ## Testing
 
 - **Pure parts in vitest (node):** the file format round trip, `hash(bytes)` stability, the model-side check (accepts, rounds, rejects), and determinism (the same input gives the same output twice).
-- **Two real clients:** a phone or tablet on the LAN plus a desktop browser. `references/device-testing.md` covers HTTPS on the LAN, what the agent's browser pane cannot open, iPad file pickers and downloads, and noise from Vite's hot reload in Croquet apps.
+- **Two real clients:** a phone or tablet on the LAN plus a desktop browser. `references/device-testing.md` covers HTTPS on the LAN, what the agent's browser pane cannot open, iPad file pickers and downloads, and reloading the page instead of relying on Vite's hot reload (HMR) while several devices share a session.
 - Check that the second client sees the stand-in first and then the real content, and that a late joiner gets it too.
 
 ## Report
