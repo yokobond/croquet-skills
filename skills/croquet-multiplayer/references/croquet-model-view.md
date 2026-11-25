@@ -14,6 +14,8 @@ session = await Croquet.Session.join({
 });
 ```
 
+Croquet builds the root view **inside** `Session.join`, once the model is ready, and passes that model to the view constructor; it builds the view again on every reconnect. `join()` resolves only after that, so `session` above is still unset inside the view constructor. Do there only what needs the model (subscribe, publish); start anything that needs the session object (`session.data`, `session.leave`) after `await Session.join(...)` returns.
+
 Before you rely on a box, check it from a shell: `curl -I` on `<box>files/x` with an `Origin` header should return CORS `*`, and a WebSocket upgrade to `<box>reflector/` should return `101`.
 
 ## Model
